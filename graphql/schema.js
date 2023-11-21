@@ -1,6 +1,6 @@
-const { GraphQLSchema, graphql, GraphQLObjectType, GraphQLString } = require('graphql');
-const { users, user, posts, post} = require('./queries');
-const { register, login, createPost, updatePost } = require('../graphql/mutations');
+const { GraphQLSchema, GraphQLObjectType } = require('graphql');
+const { users, user, posts, post,getComments, getCommentById} = require('./queries');
+const { register, login, createPost, updatePost, deletePost, createComment,updateComment, deleteComment } = require('../graphql/mutations');
 
 const RootType = new GraphQLObjectType({
     name: 'RootType',
@@ -10,7 +10,9 @@ const RootType = new GraphQLObjectType({
         users,
         user,
         posts,
-        post
+        post,
+        getComments,
+        getCommentById
     }
 });
 
@@ -21,7 +23,11 @@ const mutationType = new GraphQLObjectType({
         register,
         login,
         createPost,
-        updatePost
+        updatePost,
+        deletePost,
+        createComment,
+        updateComment,
+        deleteComment
     }
 });
 

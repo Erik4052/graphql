@@ -1,6 +1,6 @@
 const {GraphQLString, GraphQLList, GraphQLID, graphql} = require('graphql');
-const { userType, postType } = require('./typedef');
-const {User, Post} = require('../models');
+const { userType, postType, commentType } = require('./typedef');
+const {User, Post, Comment} = require('../models');
 
 /* const hello = {
     type:GraphQLString,
@@ -45,4 +45,19 @@ const post = {
         return await Post.findById(args.id);
     }
 }
-module.exports = {users, user, posts, post}
+
+const getComments = {
+    type: new GraphQLList(commentType),
+    description:'Get all comments',
+    resolve:() => Comment.find()
+}
+
+const getCommentById = {
+    type: commentType,
+    description:'Get comment by Id',
+    args: {
+        id:{type: GraphQLID},
+    },
+    resolve: (_,{id}) => Comment.findById(id)
+}
+module.exports = {users, user, posts, post,getComments, getCommentById}

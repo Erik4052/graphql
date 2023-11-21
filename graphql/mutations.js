@@ -1,7 +1,7 @@
 const { GraphQLString, GraphQLID } = require("graphql");
-const { User, Post } = require("../models");
+const { User, Post, Comment } = require("../models");
 const { createJWT } = require("../util/auth");
-const { postType } = require("./typedef");
+const { postType, commentType } = require("./typedef");
 
 const register = {
   type: GraphQLString,
@@ -100,6 +100,99 @@ const updatePost = {
     }
 }
 
+const deletePost = {
+  type:GraphQLString,
+  description: 'Delete post',
+  args:{
+    postId: {type:GraphQLID}
+  },
+   async resolve(parent, {postId}, {verified}){
+    if(!verified) {
+      throw new Error('Unauthorized');
+    }
+    console.log(verified);
+    const postDeleted = await Post.findOneAndDelete({
+      _id: postId,
+      authorId: verified._id
+    });
+
+    if(!postDeleted){
+      throw new Error('Post not found');
+    }
+
+    return 'Post Deleted';
+  }
+}
+
+const createComment = {
+  type:commentType,
+  description:'Create comment to a post',
+  args: {
+    postId:{type:GraphQLString},
+    comment:{type: GraphQLString}
+  },
+  async resolve(parent,{comment, postId}, {verified}) { 
+    const newComment = await new Comment({
+      comment,
+      postId,
+      userId: verified._id
+    }).save();
+
+    return newComment;
+  }
+
+}
 
 
-module.exports = { register, login, createPost, updatePost };
+const updateComment = {
+    type: commentType,
+    description:'Updates a comment',
+    args: {
+      id:{type: GraphQLID},
+      comment:{type:GraphQLString}
+    },
+    async resolve (_,{id, comment}, {verified}){
+      if(!verified){
+        throw new Error('Unauthorized')
+      }
+
+      const commentUpdated = await Comment.findOneAndUpdate(
+        {
+          _id:id,
+          userId:verified._id
+        },
+        {
+          comment:comment,
+        },{new:true}
+      );
+
+      if(!commentUpdated) throw new Error('Commment not found');
+
+        return commentUpdated;
+    }
+}
+
+const deleteComment = {
+  type: GraphQLString,
+  description:'Delete a comment',
+  args: {
+    id:{type:GraphQLID}
+  },
+  async resolve(_, {id}, {verified}){
+    if(!verified)throw new Error('Unauthorized')
+
+    const commmentDeleted = await Comment.findOneAndDelete({
+      _id:id,
+      userId:verified._id
+    });
+
+    if(!commmentDeleted){
+      throw new Error('Comment not found');
+    }
+    return 'Comment Deleted';
+  }
+}
+
+
+
+module.exports = { register, login, createPost, updatePost, deletePost, createComment,updateComment, deleteComment };
